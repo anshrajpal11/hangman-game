@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hangman Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    #question {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    #answer {
+      font-size: 2rem;
+      letter-spacing: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    #letters {
+      display: grid;
+      grid-template-columns: repeat(13, 2rem);
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .letter {
+      background: #fff;
+      color: #333;
+      border: none;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .letter:disabled {
+      background: #888;
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #lives {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    #message {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    #restart {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #00c9ff;
+      color: #fff;
+      cursor: pointer;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hangman Game</h1>
+  <div id="question">Loading question...</div>
+  <div id="answer"></div>
+  <div id="letters"></div>
+  <div id="lives">Lives: <span id="lifeCount">6</span></div>
+  <div id="message"></div>
+  <button id="restart">Play Again</button>
+
+  <script>
+    const questions = [
+      { question: "Where is the head office of Code Quotient?", answer: "Mohali" },
+      { question: "What is the capital of Himachal Pradesh?", answer: "Shimla" },
+      { question: "Which language is used for web styling?", answer: "CSS" },
+      { question: "What does HTML stand for?", answer: "Hypertext" },
+      { question: "Which city is known as the Silicon Valley of India?", answer: "Bangalore" }
+    ];
+
+    let currentAnswer = "";
+    let displayAnswer = [];
+    let lives = 6;
+
+    const questionEl = document.getElementById("question");
+    const answerEl = document.getElementById("answer");
+    const lettersEl = document.getElementById("letters");
+    const lifeCountEl = document.getElementById("lifeCount");
+    const messageEl = document.getElementById("message");
+    const restartBtn = document.getElementById("restart");
+
+    function startGame() {
+      const random = questions[Math.floor(Math.random() * questions.length)];
+      currentAnswer = random.answer.toUpperCase();
+      displayAnswer = Array(currentAnswer.length).fill("_");
+      lives = 6;
+      lifeCountEl.textContent = lives;
+      questionEl.textContent = random.question;
+      answerEl.textContent = displayAnswer.join(" ");
+      messageEl.textContent = "";
+      restartBtn.style.display = "none";
+      createLetters();
+    }
+
+    function createLetters() {
+      lettersEl.innerHTML = "";
+      for (let i = 65; i <= 90; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = String.fromCharCode(i);
+        btn.classList.add("letter");
+        btn.addEventListener("click", handleGuess);
+        lettersEl.appendChild(btn);
+      }
+    }
+
+    function handleGuess(e) {
+      const letter = e.target.textContent;
+      e.target.disabled = true;
+
+      if (currentAnswer.includes(letter)) {
+        for (let i = 0; i < currentAnswer.length; i++) {
+          if (currentAnswer[i] === letter) {
+            displayAnswer[i] = letter;
+          }
+        }
+        answerEl.textContent = displayAnswer.join(" ");
+        checkWin();
+      } else {
+        lives--;
+        lifeCountEl.textContent = lives;
+        if (lives === 0) {
+          messageEl.textContent = "Game Over! Answer was: " + currentAnswer;
+          disableAll();
+        }
+      }
+    }
+
+    function checkWin() {
+      if (!displayAnswer.includes("_")) {
+        messageEl.textContent = "🎉 You Won!";
+        disableAll();
+      }
+    }
+
+    function disableAll() {
+      document.querySelectorAll(".letter").forEach(btn => btn.disabled = true);
+      restartBtn.style.display = "inline-block";
+    }
+
+    restartBtn.addEventListener("click", startGame);
+
+    // Start game on load
+    startGame();
+  </script>
+</body>
+</html>
